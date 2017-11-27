@@ -1,17 +1,13 @@
 package smtpmailer;
 
-import asys.net.Socket;
 import asys.net.Host;
-import haxe.io.Bytes;
-import haxe.io.Error;
-import haxe.io.BytesOutput;
+import asys.net.Socket;
 import haxe.crypto.Base64;
-import tink.io.Sink;
-import tink.io.IdealSource;
-import tink.io.Source;
-import tink.io.Pipe;
+import haxe.io.Bytes;
+import tink.io.PipeResult;
 
 using tink.CoreApi;
+using tink.io.Source;
 
 typedef SmtpConnection = {
 	host: String,
@@ -35,7 +31,7 @@ enum Secure {
 class SmtpMailer {
 
 	var socket: Socket;
-	var source: Source;
+	var source: RealSource;
 	var connection: SmtpConnection;
 	var connected = false;
 	var options: Array<String>;
@@ -212,8 +208,8 @@ class SmtpMailer {
 	@async function readLine(expectedStatus: Int) {
 		if (source == null) throw 'Could not read from stream';
 		var response = @await source.parse(parser);
-		source = response.rest;
-		var line = response.data;
+		source = response.b; //rest;
+		var line = response.a; //data;
 		if (!hasCode(line, expectedStatus))
 			throw line;
 		return line;
